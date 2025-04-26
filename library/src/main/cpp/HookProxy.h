@@ -336,11 +336,19 @@ static void invoke_je_free() {
         LOGGER("invoke failed at xdl_open");
         return;
     }
-    void *target = xdl_sym(handle, "je_free");
-    if (target == nullptr) {
-        LOGGER("invoke failed at xdl_sym");
-    } else {
+    void* target = xdl_sym(handle, "je_free");
+    if (target != nullptr) {
+        LOGGER("Found je_free via xdl_sym @ %p", target);
         sInline[4][1] = target;
+        xdl_close(handle);
+        return;
+    }
+    target = xdl_dsym(handle, "je_free");
+    if (target != nullptr) {
+        LOGGER("Found je_free via xdl_dsym @ %p", target);
+        sInline[4][1] = target;
+    } else {
+        LOGGER("je_free not found in both .dynsym and .symtab");
     }
     xdl_close(handle);
 }
